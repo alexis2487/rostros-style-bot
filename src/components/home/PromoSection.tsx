@@ -1,5 +1,5 @@
-import React from 'react';
-import { ChevronLeft, ChevronRight, Star, Tag } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronLeft, ChevronRight, Star, Tag, ChevronDown, Truck, Calculator, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
@@ -15,6 +15,7 @@ const promoProducts = [
     image: '/placeholder.svg',
     rating: 4.9,
     isLimited: true,
+    presentation: 'Kit completo 500ml',
   },
   {
     id: 2,
@@ -26,6 +27,7 @@ const promoProducts = [
     image: '/placeholder.svg',
     rating: 4.8,
     isLimited: false,
+    presentation: '60ml + 60ml',
   },
   {
     id: 3,
@@ -37,6 +39,7 @@ const promoProducts = [
     image: '/placeholder.svg',
     rating: 4.9,
     isLimited: true,
+    presentation: '250ml',
   },
   {
     id: 4,
@@ -48,6 +51,7 @@ const promoProducts = [
     image: '/placeholder.svg',
     rating: 4.7,
     isLimited: false,
+    presentation: 'Tijeras + Peine profesional',
   },
   {
     id: 5,
@@ -59,11 +63,26 @@ const promoProducts = [
     image: '/placeholder.svg',
     rating: 4.8,
     isLimited: true,
+    presentation: '200ml',
   },
 ];
 
 const PromoSection = () => {
   const scrollContainer = React.useRef<HTMLDivElement>(null);
+  const [openDropdown, setOpenDropdown] = useState<number | null>(null);
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('[data-dropdown]')) {
+        setOpenDropdown(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
 
   const scroll = (direction: 'left' | 'right') => {
     if (scrollContainer.current) {
@@ -73,6 +92,20 @@ const PromoSection = () => {
         behavior: 'smooth'
       });
     }
+  };
+
+  const toggleDropdown = (productId: number) => {
+    setOpenDropdown(openDropdown === productId ? null : productId);
+  };
+
+  const calculateShipping = (price: number) => {
+    // Envío gratis para compras mayores a $80,000
+    return price >= 80000 ? 0 : 8000;
+  };
+
+  const calculateFinalPrice = (price: number) => {
+    const shipping = calculateShipping(price);
+    return price + shipping;
   };
 
   return (
@@ -163,9 +196,110 @@ const PromoSection = () => {
                   </p>
                 </div>
 
-                <Button variant="premium" size="sm" className="w-full">
-                  Consultar Oferta
-                </Button>
+                <div className="relative" data-dropdown>
+                  <Button 
+                    variant="premium" 
+                    size="sm" 
+                    className="w-full justify-between"
+                    onClick={() => toggleDropdown(product.id)}
+                  >
+                    Consultar Oferta
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${
+                      openDropdown === product.id ? 'rotate-180' : ''
+                    }`} />
+                  </Button>
+                  
+                  {/* Dropdown Menu */}
+                  {openDropdown === product.id && (
+                    <div className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-lg shadow-elevation z-50 p-4 space-y-3">
+                      {/* Product Info */}
+                      <div className="border-b border-border pb-3">
+                        <h4 className="font-semibold text-foreground text-sm mb-1">
+                          {product.name}
+                        </h4>
+                        <p className="text-xs text-muted-foreground">
+                          {product.brand} • {product.presentation}
+                        </p>
+                      </div>
+
+                      {/* Price Breakdown */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-muted-foreground">Precio con descuento:</span>
+                          <span className="font-semibold text-foreground">
+                            ${product.price.toLocaleString()}
+                          </span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center">
+                          <div className="flex items-center space-x-1">
+                            <Truck className="w-3 h-3 text-muted-foreground" />
+                            <span className="text-sm text-muted-foreground">Costo de envío:</span>
+                          </div>
+                          <span className={`text-sm font-medium ${
+                            calculateShipping(product.price) === 0 
+                              ? 'text-green-600' 
+                              : 'text-foreground'
+                          }`}>
+                            {calculateShipping(product.price) === 0 
+                              ? 'GRATIS' 
+                              : `$${calculateShipping(product.price).toLocaleString()}`
+                            }
+                          </span>
+                        </div>
+
+                        {calculateShipping(product.price) === 0 && (
+                          <p className="text-xs text-green-600 bg-green-50 p-2 rounded">
+                            ✨ ¡Envío gratuito por compra superior a $80,000!
+                          </p>
+                        )}
+
+                        <div className="border-t border-border pt-2 mt-2">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center space-x-1">
+                              <Calculator className="w-3 h-3 text-primary" />
+                              <span className="text-sm font-semibold text-foreground">Total a pagar:</span>
+                            </div>
+                            <span className="font-bold text-lg text-primary">
+                              ${calculateFinalPrice(product.price).toLocaleString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="grid grid-cols-2 gap-2 pt-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => {
+                            const phone = '573001234567';
+                            const message = encodeURIComponent(
+                              `Hola, me interesa la oferta de ${product.name} por $${product.price.toLocaleString()}. ¿Está disponible?`
+                            );
+                            window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+                          }}
+                        >
+                          <MessageCircle className="w-3 h-3 mr-1" />
+                          Consultar
+                        </Button>
+                        <Button 
+                          variant="default" 
+                          size="sm"
+                          onClick={() => {
+                            const phone = '573001234567';
+                            const message = encodeURIComponent(
+                              `¡Quiero comprar ${product.name}! Total: $${calculateFinalPrice(product.price).toLocaleString()} (incluye envío)`
+                            );
+                            window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+                          }}
+                        >
+                          Comprar ahora
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))}
