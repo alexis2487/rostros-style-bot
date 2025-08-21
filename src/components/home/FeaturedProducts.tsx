@@ -1,8 +1,16 @@
-import React from 'react';
-import { Star, Eye, ArrowRight } from 'lucide-react';
+import React, { useState } from 'react';
+import { Star, Eye, ArrowRight, ChevronDown, Truck, Calculator, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Link } from 'react-router-dom';
+import { 
+  shampooLoreal, 
+  tinteWella, 
+  mascarillaKerastase, 
+  secadorBabyliss, 
+  aceiteMatrix,
+  kitHerramientas 
+} from '@/assets/products';
 
 // Sample featured products
 const featuredProducts = [
@@ -12,9 +20,11 @@ const featuredProducts = [
     brand: 'L\'Oréal Professional',
     price: 45000,
     rating: 4.9,
-    image: '/placeholder.svg',
+    image: shampooLoreal,
     category: 'Cuidado Capilar',
     isBestseller: true,
+    presentation: '500ml',
+    benefits: ['Reparación profunda', 'Cabello suave', 'Brillo natural'],
   },
   {
     id: 2,
@@ -22,9 +32,11 @@ const featuredProducts = [
     brand: 'Wella',
     price: 35000,
     rating: 4.8,
-    image: '/placeholder.svg',
+    image: tinteWella,
     category: 'Coloración',
     isBestseller: false,
+    presentation: '60ml',
+    benefits: ['Color duradero', 'Cobertura total', 'Fácil aplicación'],
   },
   {
     id: 3,
@@ -32,9 +44,11 @@ const featuredProducts = [
     brand: 'Kerastase',
     price: 65000,
     rating: 4.9,
-    image: '/placeholder.svg',
+    image: mascarillaKerastase,
     category: 'Tratamientos',
     isBestseller: true,
+    presentation: '250ml',
+    benefits: ['Hidratación profunda', 'Nutrición intensa', 'Protección'],
   },
   {
     id: 4,
@@ -42,9 +56,11 @@ const featuredProducts = [
     brand: 'Babyliss',
     price: 180000,
     rating: 4.7,
-    image: '/placeholder.svg',
+    image: secadorBabyliss,
     category: 'Herramientas',
     isBestseller: false,
+    presentation: '2200W',
+    benefits: ['Secado rápido', 'Tecnología iónica', 'Motor AC profesional'],
   },
   {
     id: 5,
@@ -52,9 +68,11 @@ const featuredProducts = [
     brand: 'Matrix',
     price: 28000,
     rating: 4.8,
-    image: '/placeholder.svg',
+    image: aceiteMatrix,
     category: 'Cuidado Capilar',
     isBestseller: true,
+    presentation: '100ml',
+    benefits: ['Nutrición intensa', 'Brillo natural', 'Control del frizz'],
   },
   {
     id: 6,
@@ -62,13 +80,42 @@ const featuredProducts = [
     brand: 'Redken',
     price: 95000,
     rating: 4.9,
-    image: '/placeholder.svg',
+    image: kitHerramientas,
     category: 'Tratamientos',
     isBestseller: true,
+    presentation: 'Kit completo',
+    benefits: ['Alisado duradero', 'Cabello sedoso', 'Fácil mantenimiento'],
   },
 ];
 
 const FeaturedProducts = () => {
+  const [openDropdown, setOpenDropdown] = useState<number | null>(null);
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Element;
+      if (!target.closest('[data-dropdown]')) {
+        setOpenDropdown(null);
+      }
+    };
+
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, []);
+
+  const toggleDropdown = (productId: number) => {
+    setOpenDropdown(openDropdown === productId ? null : productId);
+  };
+
+  const calculateShipping = (price: number) => {
+    return price >= 80000 ? 0 : 8000;
+  };
+
+  const calculateFinalPrice = (price: number) => {
+    const shipping = calculateShipping(price);
+    return price + shipping;
+  };
   return (
     <section className="py-16 md:py-24">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -143,9 +190,123 @@ const FeaturedProducts = () => {
                   <span className="font-bold text-lg text-foreground">
                     ${product.price.toLocaleString()}
                   </span>
-                  <Button variant="outline" size="sm">
-                    Más info
-                  </Button>
+                  <div className="relative" data-dropdown>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      className="justify-between min-w-[100px]"
+                      onClick={() => toggleDropdown(product.id)}
+                    >
+                      Más info
+                      <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${
+                        openDropdown === product.id ? 'rotate-180' : ''
+                      }`} />
+                    </Button>
+                    
+                    {/* Dropdown Menu - Fixed positioning for better visibility */}
+                    {openDropdown === product.id && (
+                      <>
+                        <div 
+                          className="fixed inset-0 z-[9998]"
+                          onClick={() => setOpenDropdown(null)}
+                        ></div>
+                        <div className="absolute top-full right-0 mt-2 bg-background border border-border rounded-lg shadow-elevation z-[9999] p-4 space-y-3 min-w-[300px]">
+                        {/* Product Info */}
+                        <div className="border-b border-border pb-3">
+                          <h4 className="font-semibold text-foreground text-sm mb-1">
+                            {product.name}
+                          </h4>
+                          <p className="text-xs text-muted-foreground mb-2">
+                            {product.brand} • {product.presentation}
+                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            {product.benefits.map((benefit, index) => (
+                              <Badge key={index} variant="outline" className="text-xs">
+                                {benefit}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Price Breakdown */}
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-muted-foreground">Precio del producto:</span>
+                            <span className="font-semibold text-foreground">
+                              ${product.price.toLocaleString()}
+                            </span>
+                          </div>
+                          
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center space-x-1">
+                              <Truck className="w-3 h-3 text-muted-foreground" />
+                              <span className="text-sm text-muted-foreground">Costo de envío:</span>
+                            </div>
+                            <span className={`text-sm font-medium ${
+                              calculateShipping(product.price) === 0 
+                                ? 'text-green-600' 
+                                : 'text-foreground'
+                            }`}>
+                              {calculateShipping(product.price) === 0 
+                                ? 'GRATIS' 
+                                : `$${calculateShipping(product.price).toLocaleString()}`
+                              }
+                            </span>
+                          </div>
+
+                          {calculateShipping(product.price) === 0 && (
+                            <p className="text-xs text-green-600 bg-green-50 p-2 rounded">
+                              ✨ ¡Envío gratuito por compra superior a $80,000!
+                            </p>
+                          )}
+
+                          <div className="border-t border-border pt-2 mt-2">
+                            <div className="flex justify-between items-center">
+                              <div className="flex items-center space-x-1">
+                                <Calculator className="w-3 h-3 text-primary" />
+                                <span className="text-sm font-semibold text-foreground">Total a pagar:</span>
+                              </div>
+                              <span className="font-bold text-lg text-primary">
+                                ${calculateFinalPrice(product.price).toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="grid grid-cols-2 gap-2 pt-2">
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => {
+                              const phone = '573001234567';
+                              const message = encodeURIComponent(
+                                `Hola, me interesa ${product.name} por $${product.price.toLocaleString()}. ¿Está disponible?`
+                              );
+                              window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+                            }}
+                          >
+                            <MessageCircle className="w-3 h-3 mr-1" />
+                            Consultar
+                          </Button>
+                          <Button 
+                            variant="default" 
+                            size="sm"
+                            onClick={() => {
+                              const phone = '573001234567';
+                              const message = encodeURIComponent(
+                                `¡Quiero comprar ${product.name}! Total: $${calculateFinalPrice(product.price).toLocaleString()} (incluye envío)`
+                              );
+                              window.open(`https://wa.me/${phone}?text=${message}`, '_blank');
+                            }}
+                          >
+                            Comprar ahora
+                          </Button>
+                        </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

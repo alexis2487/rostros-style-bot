@@ -2,6 +2,13 @@ import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, Star, Tag, ChevronDown, Truck, Calculator, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { 
+  shampooLoreal, 
+  tinteWella, 
+  mascarillaKerastase, 
+  kitHerramientas, 
+  aceiteMatrix 
+} from '@/assets/products';
 
 // Sample promotional products
 const promoProducts = [
@@ -12,7 +19,7 @@ const promoProducts = [
     originalPrice: 85000,
     price: 68000,
     discount: 20,
-    image: '/placeholder.svg',
+    image: shampooLoreal,
     rating: 4.9,
     isLimited: true,
     presentation: 'Kit completo 500ml',
@@ -24,7 +31,7 @@ const promoProducts = [
     originalPrice: 45000,
     price: 36000,
     discount: 20,
-    image: '/placeholder.svg',
+    image: tinteWella,
     rating: 4.8,
     isLimited: false,
     presentation: '60ml + 60ml',
@@ -36,7 +43,7 @@ const promoProducts = [
     originalPrice: 95000,
     price: 76000,
     discount: 20,
-    image: '/placeholder.svg',
+    image: mascarillaKerastase,
     rating: 4.9,
     isLimited: true,
     presentation: '250ml',
@@ -48,7 +55,7 @@ const promoProducts = [
     originalPrice: 150000,
     price: 120000,
     discount: 20,
-    image: '/placeholder.svg',
+    image: kitHerramientas,
     rating: 4.7,
     isLimited: false,
     presentation: 'Tijeras + Peine profesional',
@@ -60,7 +67,7 @@ const promoProducts = [
     originalPrice: 120000,
     price: 96000,
     discount: 20,
-    image: '/placeholder.svg',
+    image: aceiteMatrix,
     rating: 4.8,
     isLimited: true,
     presentation: '200ml',
@@ -133,7 +140,7 @@ const PromoSection = () => {
 
         <div 
           ref={scrollContainer}
-          className="flex space-x-6 overflow-x-auto scrollbar-hide pb-4"
+          className="flex space-x-6 overflow-x-auto scrollbar-hide pb-4 relative z-10"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {promoProducts.map((product) => (
@@ -209,9 +216,14 @@ const PromoSection = () => {
                     }`} />
                   </Button>
                   
-                  {/* Dropdown Menu */}
+                  {/* Dropdown Menu - Fixed positioning for better visibility */}
                   {openDropdown === product.id && (
-                    <div className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-lg shadow-elevation z-50 p-4 space-y-3">
+                    <>
+                      <div 
+                        className="fixed inset-0 z-[9998]"
+                        onClick={() => setOpenDropdown(null)}
+                      ></div>
+                      <div className="absolute top-full left-0 right-0 mt-2 bg-background border border-border rounded-lg shadow-elevation z-[9999] p-4 space-y-3 min-w-[280px]">
                       {/* Product Info */}
                       <div className="border-b border-border pb-3">
                         <h4 className="font-semibold text-foreground text-sm mb-1">
@@ -297,7 +309,8 @@ const PromoSection = () => {
                           Comprar ahora
                         </Button>
                       </div>
-                    </div>
+                      </div>
+                    </>
                   )}
                 </div>
               </div>
